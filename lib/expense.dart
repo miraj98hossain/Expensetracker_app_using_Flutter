@@ -1,3 +1,4 @@
+import 'package:expensetracker/add_Expense.dart';
 import 'package:expensetracker/expenselist.dart';
 import 'package:flutter/material.dart';
 import 'package:expensetracker/models/expenses.dart';
@@ -31,7 +32,7 @@ class _ExpenseState extends State<Expense> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return const Text("data");
+        return const NewExpense();
       },
     );
   }
