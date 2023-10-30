@@ -2,7 +2,8 @@ import 'package:expensetracker/models/expenses.dart';
 import 'package:flutter/material.dart';
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
+  const NewExpense({super.key, required this.addExpense});
+  final void Function(Expenses expenses) addExpense;
 
   @override
   State<NewExpense> createState() => _NewExpenseState();
@@ -14,11 +15,13 @@ class _NewExpenseState extends State<NewExpense> {
 
   @override
   void dispose() {
+    _amountController.dispose();
     _titleController.dispose();
     super.dispose();
   }
 
   DateTime? _selectedDate;
+  Category _selectedCategory = Category.leisure;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -61,6 +64,26 @@ class _NewExpenseState extends State<NewExpense> {
             },
             icon: const Icon(Icons.calendar_month),
           ),
+          DropdownButton(
+              value: _selectedCategory,
+              items: Category.values
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(
+                        e.name.toString(),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                setState(() {
+                  _selectedCategory = value;
+                });
+              }),
           Row(
             children: [
               ElevatedButton(
@@ -75,7 +98,37 @@ class _NewExpenseState extends State<NewExpense> {
                 width: 50,
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  final enteredAmount = double.tryParse(_amountController.text);
+                  final amountIsvalid =
+                      enteredAmount == null || enteredAmount <= 0;
+                  if (_titleController.text.trim().isEmpty ||
+                      amountIsvalid ||
+                      _selectedDate == null) {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("Invalid Input"),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("Okay"))
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    widget.addExpense(Expenses(
+                        title: _titleController.text,
+                        amount: enteredAmount,
+                        date: _selectedDate!,
+                        category: _selectedCategory));
+                    Navigator.pop(context);
+                  }
+                },
                 child: const Text("Submit"),
               ),
             ],
